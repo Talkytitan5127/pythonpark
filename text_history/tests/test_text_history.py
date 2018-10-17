@@ -2,7 +2,6 @@ from unittest import TestCase
 
 from text_history import TextHistory, InsertAction, ReplaceAction, DeleteAction
 
-import pdb
 class TextHistoryTestCase(TestCase):
     def test_text__trivial(self):
         h = TextHistory()
@@ -171,3 +170,70 @@ class TextHistoryTestCase(TestCase):
 
         h.insert('a')
         self.assertEqual([], h.get_actions(0, 0))
+
+
+class TestOptimization(TestCase):
+    def test_insert_trivial(self):
+        h = TextHistory()
+        h.insert('abcd qwe')
+        h.replace('A', pos=0)
+        h.insert('gg', pos=2)
+        h.insert('pop', pos=7)
+        #pdb.set_trace()
+        actions = h.get_actions(1)
+        self.assertEqual(3, len(actions))
+        
+        v1, v2, v3 = actions
+        self.assertEqual('A', v1.text)
+        self.assertEqual(0, v1.pos)
+        self.assertEqual(2, v1.to_version)
+
+        self.assertEqual('gg', v2.text)
+        self.assertEqual(2, v2.pos)
+        self.assertEqual(3, v2.to_version)
+
+        self.assertEqual('pop', v3.text)
+        self.assertEqual(7, v3.pos)
+        self.assertEqual(4, v3.to_version)
+ 
+    def test_insert_merge(self):
+        h = TextHistory()
+        h.insert('abcd qwe')
+        h.insert('gg')
+        h.insert('pop')
+        
+        actions = h.get_actions()
+        self.assertEqual(1, len(actions))
+
+        v1 = actions[0]
+        self.assertEqual('abcd qweggpop', v1.text)
+        self.assertEqual(0, v1.pos)
+        self.assertEqual(3, v1.to_version)
+    
+    def test_insert_mix_merge(self):
+        h = TextHistory()
+        h.insert('abcd qwe')
+        h.insert('gg', pos=2)
+        
+        actions = h.get_actions()
+        self.assertEqual(1, len(actions))
+
+        v1 = actions[0]
+        self.assertEqual('abggcd qwe', v1.text)
+        self.assertEqual(0, v1.pos)
+        self.assertEqual(2, v1.to_version)
+    
+    def test_insert_example(self):
+        h = TextHistory()
+        h.insert('abc qwe')
+        h.replace('A', pos=0)
+        h.insert('xy', pos=2)
+        h.insert('z', pos=4)
+
+        actions = h.get_actions()
+        self.assertEqual(3, len(actions))
+
+        v3 = actions[2]
+        self.assertEqual('xyz', v3.text)
+        self.assertEqual(2, v3.pos)
+        self.assertEqual(4, v3.to_version)

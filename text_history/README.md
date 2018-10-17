@@ -39,4 +39,11 @@
 
 Тестов на это нет, надо придумать минимум две любые оптимизации и реализовать.
 
-Оптимизации в процессе
+Merge для метода `insert`:
+1) `insert('x', pos=42)`, `insert('y', 43)` --> `insert('xy', pos=42)`
+2) `insert('x')`, `insert('y')`, `insert('z')` --> `insert('xyz')`
+3) `h.insert('abcd qwe')`, `h.insert('gg', pos=2)` --> `insert('abggcd qwe')`
+
+Merge для метода `replace` в процессе разработки.
+Пример для обдумывания:
+`replace('xyz', pos=2)`, `replace('X', pos=2)` --> `replace('Xyz', pos=2)`

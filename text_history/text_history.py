@@ -1,3 +1,6 @@
+import pdb
+from collections import deque
+
 class TextHistory:
     def __init__(self):
         self._text = ''
@@ -91,7 +94,12 @@ class TextHistory:
             to_version = self._version
         if not self.check_version(from_version, to_version):
             raise ValueError
-        return self._actions[from_version:to_version]
+        arr = self._actions[from_version:to_version]
+        if len(arr) < 2:
+            return arr
+        optim = Optimize(arr)
+        optim.optimize()
+        return optim.get_optimized()
 
 
 class Action:
@@ -132,3 +140,57 @@ class DeleteAction(Action):
     def apply(self, text):
         new_text = text[:self.pos] + text[self.pos + self.length:]
         return new_text
+
+
+class Optimize:
+    def __init__(self, actions):
+        self.data = deque(actions)
+        self.result = []
+    
+    def check_version(self, act1, act2):
+        return act1.to_version == act2.from_version
+
+    def optimize(self):
+        queue = deque([self.data.popleft() for i in range(2)])
+        while self.data or queue:
+            if len(queue) != 2:
+                if self.data:
+                    queue.append(self.data.popleft())
+                else:
+                    self.result.append(queue.popleft())
+            elif type(queue[0]) == type(queue[1]) and type(queue[0]) is InsertAction:
+                queue = self.optimize_insert(queue)
+                if len(queue) == 2:
+                    self.result.append(queue.popleft())
+            else:
+                self.result.append(queue.popleft())
+
+    def get_optimized(self):
+        return self.result
+
+    def optimize_insert(self, queue):
+        act1, act2 = queue
+        if not self.check_version(act1, act2):
+            return queue
+        
+        #case 1
+        if act1.pos + len(act1.text) == act2.pos:
+            new_act = InsertAction(
+                pos=act1.pos,
+                text=act1.text+act2.text,
+                from_version=act1.from_version,
+                to_version=act2.to_version
+            )
+            return deque([new_act])
+        #case 2
+        elif not act1.pos:
+            new_text = act1.text[:act2.pos] + act2.text + act1.text[act2.pos:]
+            new_act = InsertAction(
+                pos=act1.pos,
+                text=new_text,
+                from_version=act1.from_version,
+                to_version=act2.to_version
+            )
+            return deque([new_act])
+        return queue
+        
