@@ -46,4 +46,4 @@ Merge для метода `insert`:
 
 Merge для метода `replace` в процессе разработки.
 Пример для обдумывания:
-`replace('xyz', pos=2)`, `replace('X', pos=2)` --> `replace('Xyz', pos=2)`
+1) `replace('xyz', pos=2)`, `replace('X', pos=2)` --> `replace('Xyz', pos=2)`
