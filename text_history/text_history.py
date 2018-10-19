@@ -94,7 +94,7 @@ class TextHistory:
             to_version = self._version
         if not self.check_version(from_version, to_version):
             raise ValueError
-        arr = self._actions[from_version:to_version]
+        arr = list(filter(lambda action: from_version <= action.from_version and action.to_version <= to_version, self._actions))
         if len(arr) < 2:
             return arr
         optim = Optimize(arr)
