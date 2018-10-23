@@ -94,7 +94,7 @@ class TextHistory:
             to_version = self._version
         if not self.check_version(from_version, to_version):
             raise ValueError
-        arr = list(filter(lambda action: from_version <= action.from_version and action.to_version <= to_version, self._actions))
+        arr = [action for action in self._actions if from_version <= action.from_version and action.to_version <= to_version]
         if len(arr) < 2:
             return arr
         optim = Optimize(arr)
@@ -159,7 +159,12 @@ class Optimize:
                 else:
                     self.result.append(queue.popleft())
             elif type(queue[0]) == type(queue[1]) and type(queue[0]) is InsertAction:
-                queue = self.optimize_insert(queue)
+                queue = InsertOptimize(queue).optimize_insert()
+                if len(queue) == 2:
+                    self.result.append(queue.popleft())
+            elif type(queue[0]) == type(queue[1]) and type(queue[0]) is ReplaceAction:
+                #pdb.set_trace()
+                queue = ReplaceOptimize(queue).optimize_replace()
                 if len(queue) == 2:
                     self.result.append(queue.popleft())
             else:
@@ -168,29 +173,77 @@ class Optimize:
     def get_optimized(self):
         return self.result
 
-    def optimize_insert(self, queue):
-        act1, act2 = queue
-        if not self.check_version(act1, act2):
-            return queue
+
+class InsertOptimize(Optimize):
+    def __init__(self, queue):
+        self.act1, self.act2 = queue
+    
+    def optimize_insert(self):
+        #act1, act2 = queue
+        if not self.check_version(self.act1, self.act2):
+            return deque(self.act1, self.act2)
         
         #case 1
-        if act1.pos + len(act1.text) == act2.pos:
-            new_act = InsertAction(
-                pos=act1.pos,
-                text=act1.text+act2.text,
-                from_version=act1.from_version,
-                to_version=act2.to_version
-            )
-            return deque([new_act])
+        if self.act1.pos + len(self.act1.text) == self.act2.pos:
+            return self.merge_insert()
         #case 2
-        elif not act1.pos:
-            new_text = act1.text[:act2.pos] + act2.text + act1.text[act2.pos:]
-            new_act = InsertAction(
-                pos=act1.pos,
-                text=new_text,
-                from_version=act1.from_version,
-                to_version=act2.to_version
-            )
-            return deque([new_act])
-        return queue
+        elif not self.act1.pos:
+            return self.add_insert_to_new()
+
+        return deque([self.act1, self.act2]) 
+    
+    def merge_insert(self):
+        new_act = InsertAction(
+            pos=self.act1.pos,
+            text=self.act1.text+self.act2.text, 
+            from_version=self.act1.from_version, 
+            to_version=self.act2.to_version
+        )
+        return deque([new_act])
+    
+    def add_insert_to_new(self):
+        new_text = self.act1.text[:self.act2.pos] + self.act2.text + self.act1.text[self.act2.pos:]
+        new_act = InsertAction(
+            pos=self.act1.pos,
+            text=new_text,
+            from_version=self.act1.from_version,
+            to_version=self.act2.to_version
+        )
+        return deque([new_act])
+
+
+class ReplaceOptimize(Optimize):
+    def __init__(self, queue):
+        self.act1, self.act2 = queue
+    
+    def optimize_replace(self):
+        if not self.check_version(self.act1, self.act2):
+            return deque(self.act1, self.act2)
         
+        if self.act1.pos <= self.act2.pos < self.act1.pos + len(self.act1.text):
+            return self.add_replace()
+        elif self.act1.pos + len(self.act1.text) == self.act2.pos:
+            return self.merge_replace()
+        
+        return deque([self.act1, self.act2])
+    
+    def add_replace(self):
+        new_pos = self.act2.pos - self.act1.pos
+        new_text = self.act1.text[:new_pos] + self.act2.text + self.act1.text[new_pos+len(self.act2.text):]
+        new_act = ReplaceAction(
+            pos = self.act1.pos,
+            text=new_text,
+            from_version=self.act1.from_version,
+            to_version=self.act2.to_version
+        )
+        return deque([new_act])
+
+    def merge_replace(self):
+        new_text = self.act1.text + self.act2.text
+        new_act = ReplaceAction(
+            pos = self.act1.pos,
+            text=new_text,
+            from_version=self.act1.from_version,
+            to_version=self.act2.to_version
+        )
+        return deque([new_act])

@@ -172,7 +172,7 @@ class TextHistoryTestCase(TestCase):
         self.assertEqual([], h.get_actions(0, 0))
 
 
-class TestOptimization(TestCase):
+class TestInsertOptimization(TestCase):
     def test_insert_trivial(self):
         h = TextHistory()
         h.insert('abcd qwe')
@@ -237,3 +237,47 @@ class TestOptimization(TestCase):
         self.assertEqual('xyz', v3.text)
         self.assertEqual(2, v3.pos)
         self.assertEqual(4, v3.to_version)
+
+
+class TestReplaceOptimization(TestCase):
+    def test_trivial_replace(self):
+        h = TextHistory()
+        h.insert('abcdef')
+        h.replace('A', pos=0)
+        h.replace('B', pos=1)
+
+        actions = h.get_actions()
+        self.assertEqual(2, len(actions))
+
+        v2 = actions[1]
+        self.assertEqual('AB', v2.text)
+        self.assertEqual(0, v2.pos)
+        self.assertEqual(3, v2.to_version)
+    
+    def test_add_replace(self):
+        h = TextHistory()
+        h.insert('abcdef')
+        h.replace('xyz', pos=2)
+        h.replace('QR', pos=2)
+
+        actions = h.get_actions()
+        self.assertEqual(2, len(actions))
+
+        v2 = actions[1]
+        self.assertEqual('QRz', v2.text)
+        self.assertEqual(2, v2.pos)
+        self.assertEqual(3, v2.to_version)
+    
+    def test_add_long_replace(self):
+        h = TextHistory()
+        h.insert('abcdef')
+        h.replace('xyz', pos=2)
+        h.replace('QRP', pos=4)
+
+        actions = h.get_actions()
+        self.assertEqual(2, len(actions))
+
+        v2 = actions[1]
+        self.assertEqual('xyQRP', v2.text)
+        self.assertEqual(2, v2.pos)
+        self.assertEqual(3, v2.to_version)
