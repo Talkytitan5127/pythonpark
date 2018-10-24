@@ -163,12 +163,16 @@ class Optimize:
                 if len(queue) == 2:
                     self.result.append(queue.popleft())
             elif type(queue[0]) == type(queue[1]) and type(queue[0]) is ReplaceAction:
-                #pdb.set_trace()
                 queue = ReplaceOptimize(queue).optimize_replace()
+                if len(queue) == 2:
+                    self.result.append(queue.popleft())
+            elif type(queue[0]) == type(queue[1]) and type(queue[0]) is DeleteAction:
+                queue = DeleteOptimize(queue).optimize_delete()
                 if len(queue) == 2:
                     self.result.append(queue.popleft())
             else:
                 self.result.append(queue.popleft())
+            
 
     def get_optimized(self):
         return self.result
@@ -243,6 +247,25 @@ class ReplaceOptimize(Optimize):
         new_act = ReplaceAction(
             pos = self.act1.pos,
             text=new_text,
+            from_version=self.act1.from_version,
+            to_version=self.act2.to_version
+        )
+        return deque([new_act])
+
+class DeleteOptimize(Optimize):
+    def __init__(self, queue):
+        self.act1, self.act2 = queue
+
+    def optimize_delete(self):
+        if self.act1.pos == self.act2.pos:
+            return self.merge_delete()
+        
+        return deque([self.act1, self.act2])
+
+    def merge_delete(self):
+        new_act = DeleteAction(
+            pos=self.act1.pos,
+            length=self.act1.length + self.act2.length,
             from_version=self.act1.from_version,
             to_version=self.act2.to_version
         )

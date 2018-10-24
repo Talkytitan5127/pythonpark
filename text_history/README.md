@@ -44,6 +44,10 @@ Merge для метода `insert`:
 2) `insert('x')`, `insert('y')`, `insert('z')` --> `insert('xyz')`
 3) `h.insert('abcd qwe')`, `h.insert('gg', pos=2)` --> `insert('abggcd qwe')`
 
-Merge для метода `replace` в процессе разработки.
+Merge для метода `replace`:
 Пример для обдумывания:
 1) `replace('xyz', pos=2)`, `replace('X', pos=2)` --> `replace('Xyz', pos=2)`
+2) `replace('xyz', pos=4)`, `replace('QWR', pos=4)` --> `replace('xyQWR', pos=2)`
+
+Merge для метода `delete`:
+1) `delete(pos=1, length=2)`, `replace(pos=3, length=1)` --> `replace(pos=1, length=3)`

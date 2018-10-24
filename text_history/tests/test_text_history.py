@@ -281,3 +281,9 @@ class TestReplaceOptimization(TestCase):
         self.assertEqual('xyQRP', v2.text)
         self.assertEqual(2, v2.pos)
         self.assertEqual(3, v2.to_version)
+    
+    def test_delete(self):
+        h = TextHistory()
+        h.insert('abcdefgh')
+        h.delete(pos=1, length=2)
+        h.delete(pos=1, length=1)
