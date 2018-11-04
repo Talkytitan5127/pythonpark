@@ -1,4 +1,3 @@
-
 import argparse
 import socket
 import time
@@ -6,7 +5,6 @@ from collections import deque
 from hashlib import sha256
 
 class TaskQueueServer:
-
     def __init__(self, ip, port, path, timeout):
         self.path = path
         self.queue = Queues(timeout)
@@ -22,7 +20,6 @@ class TaskQueueServer:
             handler = Handler(conn, address, self.queue)
             handler.handle()
             
-
     def __del__(self):
         self.socket.close()
 
@@ -79,7 +76,6 @@ class Queues:
             self.que_process[queue] = dict()
         self.queues[queue].append(task)
         return task.id
-
     
     def ack(self, name, task_id):
         if task_id not in self.que_process[name].keys():
@@ -97,7 +93,6 @@ class Queues:
             self.proc_count += 1
         self.que_process[name] = new_proc
         
-    
     def check_in(self, name, task_id):
         if not name in self.queues:
             return "NO"
