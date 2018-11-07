@@ -1,13 +1,18 @@
 import argparse
+import os
 import socket
 import time
+import json
 from collections import deque
 from hashlib import sha256
 
 class TaskQueueServer:
     def __init__(self, ip, port, path, timeout):
-        self.path = path
-        self.queue = Queues(timeout)
+        self.queue = Queues(timeout, path)
+        proc_file = path+'process.log'
+        que_file = path+'queue.log'
+        if os.path.exists(proc_file) and os.path.exists(que_file):
+            self.queue.load()
         self.socket = socket.socket()
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((ip, port))
@@ -54,7 +59,8 @@ class Handler:
 
 
 class Queues:
-    def __init__(self, timeout):
+    def __init__(self, timeout, path):
+        self.path = path
         self.queues = {}
         self.que_process = {}
         self.proc_count = 0
@@ -118,16 +124,52 @@ class Queues:
             self.queues[que].insert(int(task.pos), task)
 
     def save(self):
+        save = {}
+        for key in self.queues:
+            save[key] = [elem.tjson() for elem in self.queues[key]]
+        with open(self.path+"queue.log", 'w') as que_file:
+            print(json.dumps(save), file=que_file) 
+        save = {}
+        for key in self.que_process:
+            save[key] = dict()
+            for elem, task in self.que_process[key].items():
+                save[key][elem] = task.tjson()
+        with open(self.path+"process.log", 'w') as proc_file:
+            print(json.dumps(save), file=proc_file) 
+        
+        return "OK"
+    
+    def load(self):
+        que_file = self.path+'queue.log'
+        proc_file = self.path+'process.log'
+        data = None
+        que = {}
+        with open(que_file, 'r') as f:
+            data = json.load(f)
+            for key, value in data.items():
+                que[key] = deque([Task(**elem) for elem in value])
+        self.queues = que
+        proc = {}
+        with open(proc_file, 'r') as f:
+            data = json.load(f)
+            for name in data.keys():
+                proc[name] = {}
+                for key, task in data[name].items():
+                    proc[name][key] = Task(**task)
+        self.que_process = proc
+        os.remove(que_file)
+        os.remove(proc_file)
         return "OK"
 
 
+
 class Task:
-    def __init__(self, length, data):
+    def __init__(self, length, data, time=0, pos=-1, id=0):
         self.length = length
         self.data = data
-        self.time = 0
-        self.id = self.get_id()
-        self.pos = -1
+        self.time = time
+        self.id = id or self.get_id()
+        self.pos = pos
     
     def get_id(self):
         global number
@@ -140,7 +182,15 @@ class Task:
     
     def __str__(self):
         return "{} {} {}".format(self.id, self.length, self.data)
-
+    
+    def tjson(self):
+        return {
+            'length': self.length,
+            'data': self.data,
+            'time': self.time,
+            'id': self.id,
+            'pos': self.id
+        }
 
 def parse_args():
     parser = argparse.ArgumentParser(description='This is a simple task queue server with custom protocol')
