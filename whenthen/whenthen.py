@@ -3,6 +3,9 @@
 import pdb
 from functools import wraps
 
+class OrderError(Exception):
+    pass
+
 class whenthen:
     def __init__(self, function):
         self.main = function
@@ -12,20 +15,20 @@ class whenthen:
 
     def when(self, function):
         if len(self._then) != len(self._when):
-            raise KeyError
+            raise OrderError
         self._when.append(function)
         return self
 
     def then(self, function):
         if self._pos >= len(self._when):
-            raise KeyError
+            raise OrderError
         self._then.append(function)
         self._pos += 1
         return self
 
     def __call__(self, elem):
         if len(self._when) != len(self._then):
-            raise ValueError
+            raise OrderError
         for ind in range(self._pos):
             if self._when[ind](elem):
                 return self._then[ind](elem)
