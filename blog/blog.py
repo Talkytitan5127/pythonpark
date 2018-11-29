@@ -8,7 +8,7 @@ class Base:
             host='localhost',
             username='programmer',
             password='password',
-            db='blogdb'
+            dbname='blogdb'
         )
 
 class User(Base):
