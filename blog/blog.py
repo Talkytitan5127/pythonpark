@@ -138,6 +138,7 @@ class Comment(Base):
         comment = input("to which comment, enter theme [None]: ")
         status = self.db.create_comment(data, comment)
         print(status)
+
     def get_user_comments(self, token=None):
         user_id = self.db.is_login(token)
         if user_id is None:

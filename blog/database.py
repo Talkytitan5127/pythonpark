@@ -4,11 +4,11 @@ import jwt
 import mysql.connector
 from mysql.connector import errorcode
 from hashlib import sha256
-import pdb
+
 class Database:
-    def __init__(self, host, username, password, db):
+    def __init__(self, host, username, password, dbname):
         try:
-            self.connect = mysql.connector.connect(host=host, user=username, passwd=password, database=db)
+            self.connect = mysql.connector.connect(host=host, user=username, passwd=password, database=dbname)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 print("Something is wrong with your user name or password")
@@ -18,9 +18,9 @@ class Database:
                 print(err)
         self.cur = self.connect.cursor(buffered=True)
 
-    def __del__(self):
-        self.cur.close()
-        self.connect.close()
+#    def __del__(self):
+#        self.cur.close()
+#        self.connect.close()
     
     def register(self, data):
         command = ("insert into users "
@@ -72,7 +72,6 @@ class Database:
         if not res:
             return None
         return res[0]
-
 
     def get_lists_user(self):
         command = ("select username, first_name, last_name from users")
