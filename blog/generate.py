@@ -40,40 +40,38 @@ def parse_args():
 def gen_users(db):
     print("gen_users")
     fake = Faker()
-    i = get_counter(db, 'users')
-    while i < 1000:
+    data = []
+    uniq = []
+    for i in range(1020):
         print(i)
         user = fake.simple_profile()
         first, last = user['name'].split(' ', 1)
-        data = {
+        data_user = {
             'username': user['username'],
             'first_name': first,
             'last_name': last,
             'password': user['mail']
         }
-        try:
-            db.register(data)
-            i += 1
-        except Exception as e:
-            print(e)
-
+        if data_user['username'] not in uniq:
+            data.append(data_user)
+            uniq.append(data_user['username'])
+    command = ("insert into `users` (username, first_name, last_name, password) values (%(username)s, %(first_name)s, %(last_name)s, %(last_name)s)")
+    db.cur.executemany(command, data)
+    db.connect.commit()
     return "gen users successful"
 
 def gen_blogs(db):
     print("gen_blogs")
     fake = Faker()
-    i = get_counter(db, 'blogs')
-    while i < 100:
+    data = []
+    for i in range(101):
         print(i)
-        data = {}
-        data['theme'] = fake.word()
-        data['body'] = ''.join(fake.sentences(nb=2))
-        data['token'] = None
-        try:
-            db.create_blog(data)
-            i += 1
-        except Exception as e:
-            print(e)
+        theme = fake.word()
+        body = ''.join(fake.sentences(nb=2))
+        data.append((theme, body))
+    command = ("insert into `blogs` (theme, body) values (%s, %s)")
+    db.cur.executemany(command, data)
+    db.connect.commit()
     return "gen blogs success"
 
 def gen_posts(db):
@@ -82,19 +80,33 @@ def gen_posts(db):
     db.cur.execute(command)
     blogs = db.cur.fetchall()
     fake = Faker()
-    i = get_counter(db, 'posts')
-    while i < 10000:
+    posts = []
+    for i in range(10000):
         print(i)
-        blog = [blogs.pop()[0]]
-        for j in range(100):
-            data = {}
-            data['head'] = fake.word()
-            data['body'] = ''.join(fake.sentences(nb=2))
-            try:
-                db.create_post(data, blog)
-                i += 1
-            except Exception as e:
-                print(e)
+        data = {}
+        data['head'] = fake.word()
+        data['body'] = ''.join(fake.sentences(nb=2))
+        posts.append(data)
+
+    command = ("insert into `posts` (head, body) values (%(head)s, %(body)s)")
+    db.cur.executemany(command, posts)
+    print("add posts success")
+    post_blogs = []
+    blog = blogs.pop()[0]
+    blog_id = db.get_blog(blog)
+    for i in range(10000):
+        print(i)
+        post_id = db.get_post(posts[i]['head'])
+        data = {}
+        data['post_id'] = post_id
+        data['blog_id'] = blog_id
+        post_blogs.append(data)
+        if not i % 100:
+            blog = blogs.pop()[0]
+            blog_id = db.get_blog(blog)
+    command = ("insert into `post_blog` (post_id, blog_id) values (%(post_id)s, %(blog_id)s)")
+    db.cur.executemany(command, post_blogs)
+    db.connect.commit()
     return "gen posts success"
 
 def get_user(db):
@@ -113,23 +125,24 @@ def gen_comments(db):
     posts = db.cur.fetchall()
     print("gen_comments")
     fake = Faker()
-    i = get_counter(db, 'comments')
+    comments = []
+    i = 0
     while i < 100000:
         print(i)
         user_id = user()[0]
         post = posts.pop()[0]
         for q in range(10):
-            print(i+q)
             data = {}
             data['user_id'] = user_id
-            data['post_id'] = post 
+            data['post_id'] = db.get_post(post)
             data['theme'] = fake.word()
             data['body'] = ''.join(fake.sentences(nb=3))
-            try:
-                db.create_comment(data, None)
-                i += 1
-            except Exception as e:
-                print(e)
+            comments.append(data)
+            i += 1
+    command = ("insert into `comments` (user_id, theme, body, post_id) "
+        "values (%(user_id)s, %(theme)s, %(body)s, %(post_id)s)")
+    db.cur.executemany(command, comments)
+    db.connect.commit()    
     return "get comments success"
 
 def get_counter(db, column):
