@@ -74,7 +74,7 @@ class FileManager:
         data['filename'] = self.filename
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
         proc = executor.submit(write_content, data)
-        res = proc.result()
+        proc.result()
         return
 
 
