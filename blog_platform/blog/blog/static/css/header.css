@@ -1,0 +1,31 @@
+
+@media (max-width: 1000px){
+    header{
+      /* Меняем оси шапки, делая её вертикальной. */
+      flex-direction: column;
+    
+      /* Выравнивание элементов шапки с начала (по левому краю). */
+      align-items: flex-start;
+
+      height: 500px;
+    }
+}
+
+header{
+	/* Включаем режим Flexbox. */
+	display: flex; 
+	
+	/* Распределяем элементы внутри шапки */
+	justify-content: space-between;
+
+	/* Выравниваем элементы вертикально по центру. */
+    align-items: center;
+    border: 1px solid #000;
+}
+
+
+header li {
+    display: inline; /* Отображать как строчный элемент */
+    margin-right: 5px; /* Отступ слева */
+    padding: 3px; /* Поля вокруг текста */
+   }

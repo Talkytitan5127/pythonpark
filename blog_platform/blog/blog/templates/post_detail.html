@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{{ post.theme }}</h1>
+<p>{{ post.text|linebreaksbr }}</p>
+<p>Created at: {{ post.creation_date }}</p>
+
+<h3>Комментарии</h3>
+{% for comment in comments %}
+<p>
+	{{ comment.author }}: {{ comment.text }}
+	{% if comment.reply_to %}
+		<b>| Reply to {{ comment.reply_to.author }}</b>
+	{% endif %}
+	<p>Created at: {{ comment.creation_date }}</p>
+</p>
+{% empty %}
+    <p>No comments here yet :(</p>
+{% endfor %}
+
+<a href="/post/{{ post.pk }}/comment_add/" type="button">Добавить комментарий</a>
+
+{% endblock %}
