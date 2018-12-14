@@ -11,7 +11,8 @@ def index(request):
         list_post = [post for post in Post.objects.all() if search in post.theme]
     else:
         list_post = Post.objects.all()[:10]
-    context = {'list_post':list_post}
+        search = None
+    context = {'list_post':list_post, 'search':search}
     return render(request, 'index.html', context)
 
 def post_detail(request, pk):

@@ -1,24 +1,33 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
-<h1>{{ post.theme }}</h1>
-<p>{{ post.text|linebreaksbr }}</p>
-<p>Created at: {{ post.creation_date }}</p>
-
-<h3>Комментарии</h3>
-{% for comment in comments %}
-<p>
-	{{ comment.author }}: {{ comment.text }}
-	{% if comment.reply_to %}
-		<b>| Reply to {{ comment.reply_to.author }}</b>
-	{% endif %}
-	<p>Created at: {{ comment.creation_date }}</p>
-</p>
-{% empty %}
-    <p>No comments here yet :(</p>
-{% endfor %}
-
-<a href="/post/{{ post.pk }}/comment_add/" type="button">Добавить комментарий</a>
-
+<div style="margin: 15">
+<div class="post">
+	<h2>{{ post.theme }}</h2>
+	<p>{{ post.text|linebreaksbr }}</p>
+	<div class="date">
+		<p>Created at: {{ post.creation_date }}</p>
+	</div>
+</div>
+<div>
+	<h2>Комментарии</h2>
+	{% for comment in comments %}
+		<div class="comment">
+			<h4> Comment from: {{comment.author}} </h4>
+			<p>{{ comment.text }}</p>
+			{% if comment.reply_to %}
+				<b>| Reply to {{ comment.reply_to.author }}</b>
+			{% endif %}
+			<div class="date">
+				<p>Created at: {{ comment.creation_date }}</p>
+			</div>
+		</div>
+	{% empty %}
+		<p>No comments here yet :(</p>
+	{% endfor %}
+</div>
+<div>
+	<a href="/post/{{ post.pk }}/comment_add/" type="button"><h4>Добавить комментарий</h4></a>
+</div>
+</div>
 {% endblock %}

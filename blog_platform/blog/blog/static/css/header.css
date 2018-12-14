@@ -1,31 +1,78 @@
-
-@media (max-width: 1000px){
-    header{
-      /* Меняем оси шапки, делая её вертикальной. */
-      flex-direction: column;
-    
-      /* Выравнивание элементов шапки с начала (по левому краю). */
-      align-items: flex-start;
-
-      height: 500px;
-    }
-}
-
-header{
-	/* Включаем режим Flexbox. */
-	display: flex; 
-	
-	/* Распределяем элементы внутри шапки */
+.page-header {
+    background-color: #ff9400;
+    margin-top: 0;
+    padding: 20px 20px 20px 40px;
+    display: flex; 
 	justify-content: space-between;
-
-	/* Выравниваем элементы вертикально по центру. */
-    align-items: center;
-    border: 1px solid #000;
+	align-items: center;
 }
 
+.header-left{
+	font: normal 28px 'Fugaz One', cursive;
+}
 
-header li {
-    display: inline; /* Отображать как строчный элемент */
-    margin-right: 5px; /* Отступ слева */
-    padding: 3px; /* Поля вокруг текста */
-   }
+.header-center {
+    font-size: 20px;
+}
+
+.header-center ul{
+	list-style: none;
+}
+
+.header-center ul li{
+	display: inline-block;
+	margin: 0 15px;
+}
+.header-center ul li a{
+	text-decoration: none;
+	color: #fff;
+	cursor: pointer;
+	font-weight: bold;
+}
+
+.page-header h1, .page-header h1 a, .page-header h1 a:visited, .page-header h1 a:active {
+    color: #ffffff;
+    font-size: 36pt;
+    text-decoration: none;
+}
+
+.content {
+    margin-left: 40px;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Lobster', cursive;
+}
+
+.date {
+    color: #828282;
+}
+
+.save {
+    float: right;
+}
+
+.post-form textarea, .post-form input {
+    width: 100%;
+}
+
+.top-menu, .top-menu:hover, .top-menu:visited {
+    color: #ffffff;
+    float: right;
+    font-size: 26pt;
+    margin-right: 20px;
+}
+
+.post {
+    margin-bottom: 50px;
+}
+
+.post h1 a, .post h1 a:visited {
+    color: #000000;
+}
+
+.comment {
+    padding: 10px;
+    width: 700px;
+    border: 1px solid cornflowerblue;
+}

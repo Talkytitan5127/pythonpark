@@ -11,6 +11,9 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ('pk', 'theme', 'creation_date', 'is_hidden')
     actions = [hide_post, show_post]
 
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('post', 'author')
+
 
 admin.site.register(models.Post, PostAdmin)
-admin.site.register(models.Comment)
+admin.site.register(models.Comment, CommentAdmin)

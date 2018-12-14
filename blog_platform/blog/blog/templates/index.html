@@ -1,27 +1,31 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
-<form type="get" action="." style="margin: 0">
-    <input  id="search_box" type="text" name="search_box"  placeholder="Search..." >
-    <button id="search_submit" type="submit" >Submit</button>
-</form>
-
-<h1>Список постов</h1>
-
-{% if list_post %}
-    <ul>
-        {% for post in list_post %}
-            {% if not post.is_hidden %}
-                <li><a href="/post/{{ post.pk }}">{{post.theme}}</a></li>
-            {% endif %}
-        {% endfor %}
-    </ul>
-    <a href="/post/new/">
-        <button type='button'>Добавить Пост</button>
-    </a>
-{% else %}
-    <p>No posts are available</p>
-{% endif %}
-
+<div>
+    <form type="get" action="." style="margin: 0">
+        <input  id="search_box" type="text" name="search_box"  placeholder="Search..."
+        {% if search %}
+            value= {{ search }}
+        {% endif %}
+        >
+        <button id="search_submit" type="submit" >Submit</button>
+    </form>
+</div>
+<div class='content'>
+    <h1>Список постов</h1>
+    {% if list_post %}
+        <ul>
+            {% for post in list_post %}
+                {% if not post.is_hidden %}
+                    <h1><a href="/post/{{ post.pk }}">{{post.theme}}</a></h1>
+                {% endif %}
+            {% endfor %}
+        </ul>
+        <a href="/post/new/">
+            <button type='button'><h4>Добавить Пост</h4></button>
+        </a>
+    {% else %}
+        <p>No posts are available</p>
+    {% endif %}
+</div>
 {% endblock %}
